@@ -31,18 +31,18 @@ export default function PlaybackControls({
     onReset,
 }: PlaybackControlsProps) {
     const buttonClass = `
-    p-3 rounded-full
-    bg-slate-700/50 hover:bg-slate-600/50
-    border border-white/10 hover:border-white/20
-    transition-all duration-200
-    disabled:opacity-30 disabled:cursor-not-allowed
-  `;
+        p-2 sm:p-2.5 rounded-full
+        bg-slate-700/50 hover:bg-slate-600/50
+        border border-white/10 hover:border-white/20
+        transition-all duration-200
+        disabled:opacity-30 disabled:cursor-not-allowed
+    `;
 
     return (
-        <div className="flex flex-col items-center gap-4">
-            {/* Progress bar */}
-            <div className="w-full max-w-md">
-                <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
+        <div className="flex flex-col items-center gap-2 sm:gap-3">
+            {/* Progress bar - more compact */}
+            <div className="w-full max-w-[200px] sm:max-w-xs">
+                <div className="h-1.5 sm:h-2 bg-slate-700/50 rounded-full overflow-hidden">
                     <motion.div
                         className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
                         initial={{ width: 0 }}
@@ -50,23 +50,23 @@ export default function PlaybackControls({
                         transition={{ duration: 0.3 }}
                     />
                 </div>
-                <div className="flex justify-between mt-1 text-xs text-slate-400">
+                <div className="flex justify-between mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-slate-400">
                     <span>Langkah {langkahAktif + 1}</span>
                     <span>dari {totalLangkah}</span>
                 </div>
             </div>
 
-            {/* Control buttons */}
-            <div className="flex items-center gap-3">
+            {/* Control buttons - more compact */}
+            <div className="flex items-center gap-2 sm:gap-3">
                 {/* Reset */}
                 <motion.button
                     className={buttonClass}
                     onClick={onReset}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    title="Ulangi dari awal"
+                    title="Ulangi dari awal (R)"
                 >
-                    <ArrowPathIcon className="w-5 h-5 text-slate-300" />
+                    <ArrowPathIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />
                 </motion.button>
 
                 {/* Previous */}
@@ -76,29 +76,29 @@ export default function PlaybackControls({
                     disabled={langkahAktif === 0}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    title="Langkah sebelumnya"
+                    title="Langkah sebelumnya (←)"
                 >
-                    <BackwardIcon className="w-5 h-5 text-slate-300" />
+                    <BackwardIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />
                 </motion.button>
 
                 {/* Play/Pause */}
                 <motion.button
                     className={`
-            p-4 rounded-full
-            bg-gradient-to-r from-blue-500 to-purple-500
-            hover:from-blue-400 hover:to-purple-400
-            shadow-lg shadow-blue-500/30
-            transition-all duration-200
-          `}
+                        p-3 sm:p-4 rounded-full
+                        bg-gradient-to-r from-blue-500 to-purple-500
+                        hover:from-blue-400 hover:to-purple-400
+                        shadow-lg shadow-blue-500/30
+                        transition-all duration-200
+                    `}
                     onClick={sedangBerjalan ? onPause : onPlay}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    title={sedangBerjalan ? "Jeda" : "Putar"}
+                    title={sedangBerjalan ? "Jeda (Space)" : "Putar (Space)"}
                 >
                     {sedangBerjalan ? (
-                        <PauseIcon className="w-6 h-6 text-white" />
+                        <PauseIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     ) : (
-                        <PlayIcon className="w-6 h-6 text-white" />
+                        <PlayIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     )}
                 </motion.button>
 
@@ -109,11 +109,12 @@ export default function PlaybackControls({
                     disabled={langkahAktif === totalLangkah - 1}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    title="Langkah selanjutnya"
+                    title="Langkah selanjutnya (→)"
                 >
-                    <ForwardIcon className="w-5 h-5 text-slate-300" />
+                    <ForwardIcon className="w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />
                 </motion.button>
             </div>
         </div>
     );
 }
+

@@ -14,6 +14,17 @@ export interface VisualizationStep {
 }
 
 /**
+ * Pertanyaan quiz untuk menguji pemahaman
+ */
+export interface QuizQuestion {
+    id: string;
+    pertanyaan: string;      // Pertanyaan dalam bahasa Indonesia
+    pilihan: string[];       // Opsi jawaban
+    jawabanBenar: number;    // Index jawaban yang benar (0-based)
+    penjelasan: string;      // Penjelasan mengapa jawaban tersebut benar
+}
+
+/**
  * Konfigurasi metadata visualisasi
  */
 export interface VisualizationConfig {
@@ -24,6 +35,7 @@ export interface VisualizationConfig {
     warna: string;           // Warna tema (Tailwind class)
     icon: string;            // Emoji atau icon
     langkahLangkah: VisualizationStep[];
+    quiz?: QuizQuestion[];   // Optional quiz setelah visualisasi selesai
 }
 
 /**
@@ -41,3 +53,4 @@ export interface VisualizationModule {
     config: VisualizationConfig;
     Component: React.ComponentType<VisualizationProps>;
 }
+

@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { getAllConfigs } from "@/visualizations/registry";
+import ProgressSummary from "@/components/ProgressSummary";
+import ProgressBadge from "@/components/ProgressBadge";
 
 const kategoriColors = {
   network: "from-blue-500 to-cyan-500",
@@ -52,6 +56,11 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Progress Summary */}
+      <div className="container mx-auto px-4 -mt-8 relative z-10">
+        <ProgressSummary totalVisualizations={visualizations.length} />
+      </div>
+
       {/* Visualizations Grid */}
       <div className="container mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold text-white mb-8">
@@ -65,6 +74,9 @@ export default function HomePage() {
               href={`/viz/${viz.slug}`}
               className="group relative bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-xl p-6 hover:border-slate-600 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1"
             >
+              {/* Progress Badge */}
+              <ProgressBadge slug={viz.slug} hasQuiz={(viz.quiz?.length ?? 0) > 0} />
+
               {/* Kategori badge */}
               <div className={`absolute top-4 right-4 px-2 py-1 rounded text-xs font-medium bg-gradient-to-r ${kategoriColors[viz.kategori]} text-white`}>
                 {kategoriLabels[viz.kategori]}
@@ -84,9 +96,17 @@ export default function HomePage() {
               </p>
 
               {/* Steps count */}
-              <div className="flex items-center gap-2 text-slate-500 text-sm">
-                <span>📋</span>
-                <span>{viz.langkahLangkah.length} langkah</span>
+              <div className="flex items-center gap-4 text-slate-500 text-sm">
+                <div className="flex items-center gap-1">
+                  <span>📋</span>
+                  <span>{viz.langkahLangkah.length} langkah</span>
+                </div>
+                {(viz.quiz?.length ?? 0) > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span>🧠</span>
+                    <span>{viz.quiz?.length} quiz</span>
+                  </div>
+                )}
               </div>
 
               {/* Hover arrow */}

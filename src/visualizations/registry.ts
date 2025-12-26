@@ -3,6 +3,7 @@
 
 import { VisualizationModule } from "./types";
 import * as httpRequest from "./http-request";
+import * as websocket from "./websocket";
 
 // Daftar semua visualisasi
 // Tambahkan visualisasi baru di sini
@@ -11,11 +12,10 @@ export const visualizations: VisualizationModule[] = [
         config: httpRequest.config,
         Component: httpRequest.Component,
     },
-    // Tambahkan visualisasi baru di sini:
-    // {
-    //   config: websocket.config,
-    //   Component: websocket.Component,
-    // },
+    {
+        config: websocket.config,
+        Component: websocket.Component,
+    },
 ];
 
 // Helper: Cari visualisasi berdasarkan slug

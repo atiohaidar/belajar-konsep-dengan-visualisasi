@@ -14,7 +14,7 @@ src/
 │   ├── types.ts                  # Type definitions
 │   ├── registry.ts               # Daftar semua visualisasi
 │   └── [nama-konsep]/            # Folder per visualisasi
-│       ├── config.ts             # Metadata & langkah-langkah
+│       ├── config.ts             # Metadata, langkah & quiz
 │       ├── [Nama]Visualization.tsx  # Komponen visualisasi
 │       └── index.ts              # Barrel export
 │
@@ -24,7 +24,8 @@ src/
 │   │   ├── Client.tsx            # Icon browser animasi
 │   │   ├── DataPacket.tsx        # Paket data bergerak
 │   │   └── Arrow.tsx             # Panah koneksi
-│   └── PlaybackControls.tsx      # Kontrol play/pause/step
+│   ├── PlaybackControls.tsx      # Kontrol play/pause/step
+│   └── QuizMode.tsx              # Komponen quiz
 │
 └── lib/
     └── animations.ts             # Framer Motion variants
@@ -64,6 +65,16 @@ export const config: VisualizationConfig = {
     },
     // ... langkah lainnya
   ],
+  // ⭐ OPTIONAL: Tambahkan quiz
+  quiz: [
+    {
+      id: "q1",
+      pertanyaan: "Pertanyaan?",
+      pilihan: ["A", "B", "C", "D"],
+      jawabanBenar: 0,           // Index jawaban benar (0-based)
+      penjelasan: "Penjelasan mengapa jawaban tersebut benar"
+    }
+  ],
 };
 ```
 
@@ -82,7 +93,7 @@ export default function NamaVisualization({
   // Logic berdasarkan langkahAktif
   
   return (
-    <div className="relative w-full h-[400px] flex items-center justify-center">
+    <div className="relative w-full h-full min-h-[280px] flex items-center justify-center">
       {/* Komponen visualisasi */}
     </div>
   );
@@ -160,13 +171,50 @@ export const visualizations: VisualizationModule[] = [
 
 Import dari `@/lib/animations`:
 
+**Basic:**
 - `fadeIn` - Fade in effect
-- `slideInFromLeft/Right` - Slide dengan spring
-- `scaleUp` - Scale dari 0
-- `pulse` - Pulsing effect
+- `slideInFromLeft/Right/Top/Bottom` - Slide dengan spring
+- `scaleUp`, `scaleDown` - Scale effects
+
+**Looping:**
+- `pulse`, `pulseFast` - Pulsing effect
 - `float` - Floating effect
-- `glowPulse` - Box shadow glow
-- `packetMove(fromX, toX)` - Untuk DataPacket custom
+- `bounce` - Bouncing effect
+- `spin` - Rotating
+- `wave` - Waving motion
+
+**Glow:**
+- `glowPulse` - Blue glow
+- `glowPurple` - Purple glow
+- `glowGreen` - Green glow
+
+**Special:**
+- `shake` - Error shake
+- `elasticPop` - Elastic pop-in
+- `ripple` - Click ripple effect
+- `expandFromCenter` - Horizontal expand
+- `successCheck` - Checkmark animation
+- `confettiBurst(angle)` - Confetti particle
+
+**Data Movement:**
+- `packetMove(fromX, toX)` - Untuk DataPacket
+- `packetWithTrail(fromX, toX)` - Dengan trail effect
+- `staggerContainer`, `staggerContainerFast` - Untuk child stagger
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+Shortcuts yang tersedia di halaman visualisasi:
+
+| Key | Action |
+|-----|--------|
+| `Space` | Play/Pause |
+| `←` `→` | Navigate langkah |
+| `R` | Reset ke awal |
+| `F` | Toggle fullscreen |
+| `Q` | Buka quiz (setelah selesai) |
+| `Esc` | Pause / Exit fullscreen |
 
 ---
 
@@ -174,9 +222,14 @@ Import dari `@/lib/animations`:
 
 - [ ] Buat folder di `src/visualizations/[nama]/`
 - [ ] Buat `config.ts` dengan metadata lengkap
+- [ ] Tambahkan quiz (minimal 3 pertanyaan)
 - [ ] Buat komponen visualisasi `.tsx`
+- [ ] Gunakan `h-full` untuk height (responsive)
 - [ ] Buat `index.ts` untuk export
 - [ ] Tambahkan ke `registry.ts`
 - [ ] Test dengan `npm run dev`
+- [ ] Test fullscreen mode
+- [ ] Test quiz functionality
 - [ ] Pastikan animasi berjalan smooth
 - [ ] Penjelasan menggunakan bahasa Indonesia
+

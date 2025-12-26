@@ -45,4 +45,43 @@ export const config: VisualizationConfig = {
             durasi: 2000,
         },
     ],
+    quiz: [
+        {
+            id: "q1",
+            pertanyaan: "Apa fungsi DNS dalam proses HTTP Request?",
+            pilihan: [
+                "Mengenkripsi data yang dikirim",
+                "Mengubah nama domain menjadi alamat IP",
+                "Memproses request dari browser",
+                "Menampilkan halaman web"
+            ],
+            jawabanBenar: 1,
+            penjelasan: "DNS (Domain Name System) berfungsi seperti buku telepon internet yang mengubah nama domain (seperti google.com) menjadi alamat IP yang dapat dipahami komputer."
+        },
+        {
+            id: "q2",
+            pertanyaan: "Status code 200 dalam HTTP Response artinya?",
+            pilihan: [
+                "Halaman tidak ditemukan",
+                "Server error",
+                "Request berhasil",
+                "Redirect ke halaman lain"
+            ],
+            jawabanBenar: 2,
+            penjelasan: "Status code 200 OK menandakan bahwa request berhasil diproses oleh server dan response dikirim dengan sukses."
+        },
+        {
+            id: "q3",
+            pertanyaan: "Bagian mana dari HTTP Request yang berisi informasi tentang jenis request?",
+            pilihan: [
+                "Body",
+                "Headers",
+                "Method (GET/POST)",
+                "Status Code"
+            ],
+            jawabanBenar: 2,
+            penjelasan: "Method seperti GET, POST, PUT, DELETE menentukan jenis operasi yang diminta. GET untuk mengambil data, POST untuk mengirim data, dll."
+        }
+    ],
 };
+
