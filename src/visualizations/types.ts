@@ -30,7 +30,7 @@ export interface MultipleChoiceQuestion extends BaseQuestion {
 
 export interface PracticeQuestion extends BaseQuestion {
     type: 'practice';
-    case: 'glbb-distance' | 'glbb-velocity';
+    case: 'glbb-distance' | 'glbb-velocity' | 'projectile-max-height' | 'projectile-range';
     variables: { [key: string]: number }; // e.g., { v0: 10, a: 2, t: 5 }
     correctAnswer: number;
     unit: string;

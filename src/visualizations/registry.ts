@@ -6,6 +6,7 @@ import { VisualizationModule, VisualizationProps, VisualizationConfig } from "./
 import * as httpRequest from "./http-request";
 import * as websocket from "./websocket";
 import * as glbb from "./glbb";
+import * as gerakParabola from "./gerak-parabola";
 
 // Daftar semua visualisasi
 // Tambahkan visualisasi baru di sini - Force refresh
@@ -21,6 +22,10 @@ export const visualizations: VisualizationModule[] = [
     {
         config: glbb.config,
         Component: glbb.Component,
+    },
+    {
+        config: gerakParabola.config,
+        Component: gerakParabola.Component,
     },
 ];
 
@@ -56,6 +61,8 @@ export function getLazyComponent(slug: string): ComponentType<VisualizationProps
                 return import("./websocket").then(m => ({ default: m.Component }));
             case "glbb":
                 return import("./glbb").then(m => ({ default: m.Component }));
+            case "gerak-parabola":
+                return import("./gerak-parabola").then(m => ({ default: m.Component }));
             default:
                 throw new Error(`Visualization "${slug}" not found`);
         }

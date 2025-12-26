@@ -165,6 +165,31 @@ export const visualizations: VisualizationModule[] = [
 />
 ```
 
+### LineGraph
+```tsx
+<LineGraph
+  title="Grafik v-t"         // Judul grafik
+  dataPoints={[              // Array titik data {x, y}
+    { x: 0, y: 10 },
+    { x: 5, y: 20 }
+  ]}
+  xLabel="t (s)"             // Label sumbu X
+  yLabel="v (m/s)"           // Label sumbu Y
+  color="#3B82F6"            // Warna garis (hex)
+  currentX={2.5}             // Posisi X marker (opsional, untuk animasi)
+  currentY={15}              // Posisi Y marker (opsional, untuk animasi)
+  xDomain={[0, 10]}          // Range sumbu X (opsional)
+  yDomain={[0, 100]}         // Range sumbu Y (opsional)
+  graphHeight={180}          // Tinggi grafik dalam px (default: 120)
+/>
+```
+
+**Fitur:**
+- Auto-scaling berdasarkan data
+- Progressive drawing (garis muncul mengikuti marker)
+- Grid lines dan axis labels otomatis
+- Marker animasi real-time
+
 ---
 
 ## 🎬 Animasi
