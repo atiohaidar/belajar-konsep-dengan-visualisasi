@@ -411,48 +411,50 @@ export default function VisualizationPage() {
                         </AnimatePresence>
                     </motion.div>
 
-                    {/* Bottom section */}
-                    <div className="shrink-0 flex flex-col lg:flex-row gap-2 sm:gap-3">
-                        {/* Step explanation */}
-                        <div className="flex-1 bg-slate-800/30 backdrop-blur border border-slate-700/50 rounded-xl p-3 sm:p-4">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={langkahAktif}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 10 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="flex items-start gap-2 sm:gap-3"
-                                >
-                                    <span className="shrink-0 px-2 sm:px-2.5 py-0.5 bg-blue-500/20 text-blue-400 rounded-full text-[10px] sm:text-xs font-medium">
-                                        {langkahAktif + 1}/{totalLangkah}
-                                    </span>
-                                    <div className="min-w-0">
-                                        <h2 className="text-xs sm:text-sm font-semibold text-white mb-0.5 sm:mb-1">
-                                            {langkahSekarang?.judul}
-                                        </h2>
-                                        <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed">
-                                            {langkahSekarang?.penjelasan}
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
+                    {/* Bottom section - Only show for multi-step visualizations */}
+                    {totalLangkah > 1 && (
+                        <div className="shrink-0 flex flex-col lg:flex-row gap-2 sm:gap-3">
+                            {/* Step explanation */}
+                            <div className="flex-1 bg-slate-800/30 backdrop-blur border border-slate-700/50 rounded-xl p-3 sm:p-4">
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={langkahAktif}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: 10 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="flex items-start gap-2 sm:gap-3"
+                                    >
+                                        <span className="shrink-0 px-2 sm:px-2.5 py-0.5 bg-blue-500/20 text-blue-400 rounded-full text-[10px] sm:text-xs font-medium">
+                                            {langkahAktif + 1}/{totalLangkah}
+                                        </span>
+                                        <div className="min-w-0">
+                                            <h2 className="text-xs sm:text-sm font-semibold text-white mb-0.5 sm:mb-1">
+                                                {langkahSekarang?.judul}
+                                            </h2>
+                                            <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed">
+                                                {langkahSekarang?.penjelasan}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
+                            </div>
 
-                        {/* Controls */}
-                        <div className="shrink-0 bg-slate-800/30 backdrop-blur border border-slate-700/50 rounded-xl p-2 sm:p-4 flex items-center justify-center">
-                            <PlaybackControls
-                                sedangBerjalan={sedangBerjalan}
-                                langkahAktif={langkahAktif}
-                                totalLangkah={totalLangkah}
-                                onPlay={handlePlay}
-                                onPause={handlePause}
-                                onNext={handleNext}
-                                onPrev={handlePrev}
-                                onReset={handleReset}
-                            />
+                            {/* Controls */}
+                            <div className="shrink-0 bg-slate-800/30 backdrop-blur border border-slate-700/50 rounded-xl p-2 sm:p-4 flex items-center justify-center">
+                                <PlaybackControls
+                                    sedangBerjalan={sedangBerjalan}
+                                    langkahAktif={langkahAktif}
+                                    totalLangkah={totalLangkah}
+                                    onPlay={handlePlay}
+                                    onPause={handlePause}
+                                    onNext={handleNext}
+                                    onPrev={handlePrev}
+                                    onReset={handleReset}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )}
 
 
                 </main>

@@ -9,34 +9,10 @@ export const config: VisualizationConfig = {
     icon: "🚗",
     langkahLangkah: [
         {
-            id: "intro",
-            judul: "Apa itu GLBB?",
-            penjelasan: "GLBB adalah gerak benda pada lintasan lurus dengan percepatan tetap (konstan). Berbeda dengan GLB yang kecepatannya tetap, pada GLBB kecepatan benda berubah secara teratur setiap detik.",
-            durasi: 3000,
-        },
-        {
-            id: "rumus",
-            judul: "Rumus Dasar GLBB",
-            penjelasan: "Ada 3 rumus utama GLBB: (1) v = v₀ + a·t untuk menghitung kecepatan akhir, (2) s = v₀·t + ½·a·t² untuk jarak tempuh, dan (3) v² = v₀² + 2·a·s yang menghubungkan kecepatan dengan jarak.",
-            durasi: 4000,
-        },
-        {
-            id: "input",
-            judul: "Masukkan Parameter",
-            penjelasan: "Sekarang coba masukkan nilai: v₀ (kecepatan awal dalam m/s), a (percepatan dalam m/s²), dan t (waktu dalam detik). Geser slider untuk mengubah nilai dan lihat bagaimana mobil bergerak!",
-            durasi: 5000,
-        },
-        {
-            id: "simulasi",
-            judul: "Simulasi Gerak",
-            penjelasan: "Perhatikan mobil bergerak! Jika percepatan positif (+), mobil akan semakin cepat. Jika percepatan negatif (-), mobil akan melambat (perlambatan). Kecepatan dan jarak tempuh dihitung secara real-time.",
-            durasi: 5000,
-        },
-        {
-            id: "kesimpulan",
-            judul: "Hasil Perhitungan",
-            penjelasan: "Lihat hasil akhir! Kecepatan akhir (v) dan jarak tempuh (s) dihitung berdasarkan parameter yang kamu masukkan. Coba ubah-ubah nilainya untuk melihat perbedaan hasilnya!",
-            durasi: 3000,
+            id: "playground",
+            judul: "Playground GLBB",
+            penjelasan: "Eksplorasi gerak GLBB secara bebas! Ubah kecepatan awal (v₀), percepatan (a), dan waktu (t) untuk melihat bagaimana mobil bergerak. Perhatikan perubahan grafik dan nilai real-time.",
+            durasi: 0,
         },
     ],
     quiz: [
