@@ -16,13 +16,28 @@ export interface VisualizationStep {
 /**
  * Pertanyaan quiz untuk menguji pemahaman
  */
-export interface QuizQuestion {
+export interface BaseQuestion {
     id: string;
-    pertanyaan: string;      // Pertanyaan dalam bahasa Indonesia
-    pilihan: string[];       // Opsi jawaban
-    jawabanBenar: number;    // Index jawaban yang benar (0-based)
-    penjelasan: string;      // Penjelasan mengapa jawaban tersebut benar
+    pertanyaan: string;
+    penjelasan: string;
 }
+
+export interface MultipleChoiceQuestion extends BaseQuestion {
+    type?: 'multiple-choice'; // Optional for backward compatibility
+    pilihan: string[];
+    jawabanBenar: number;
+}
+
+export interface PracticeQuestion extends BaseQuestion {
+    type: 'practice';
+    case: 'glbb-distance' | 'glbb-velocity';
+    variables: { [key: string]: number }; // e.g., { v0: 10, a: 2, t: 5 }
+    correctAnswer: number;
+    unit: string;
+    tolerance?: number; // Allow small margin of error (default 0.1)
+}
+
+export type QuizQuestion = MultipleChoiceQuestion | PracticeQuestion;
 
 /**
  * Konfigurasi metadata visualisasi

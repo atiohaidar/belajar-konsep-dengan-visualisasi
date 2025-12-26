@@ -212,6 +212,7 @@ export default function HomePage() {
       <footer className="border-t border-slate-800 py-8">
         <div className="container mx-auto px-4 text-center text-slate-500 text-sm">
           <p>Dibuat untuk membantu belajar berbagai konsep dengan cara yang lebih visual ✨</p>
+          <p className="mt-2 text-xs text-slate-700">Debug: Loaded {visualizations.length} viz. Categories: {activeCategories.join(', ')}</p>
         </div>
       </footer>
     </main>

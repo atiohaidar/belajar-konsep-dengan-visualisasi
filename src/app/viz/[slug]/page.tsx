@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { getVisualizationBySlug } from "@/visualizations/registry";
+import { getVisualizationBySlug, getLazyComponent } from "@/visualizations/registry";
 import PlaybackControls from "@/components/PlaybackControls";
-import QuizMode from "@/components/QuizMode";
 import PageTransition from "@/components/PageTransition";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { useProgress } from "@/lib/useProgress";
 import {
     ArrowLeftIcon,
@@ -20,6 +20,7 @@ import {
 
 export default function VisualizationPage() {
     const params = useParams();
+    const router = useRouter();
     const slug = params.slug as string;
 
     const visualization = getVisualizationBySlug(slug);
@@ -28,7 +29,6 @@ export default function VisualizationPage() {
     const [sedangBerjalan, setSedangBerjalan] = useState(false);
     const [hoveredStep, setHoveredStep] = useState<number | null>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [showQuiz, setShowQuiz] = useState(false);
     const [hasCompletedVisualization, setHasCompletedVisualization] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -114,8 +114,8 @@ export default function VisualizationPage() {
     // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Ignore if typing in input or quiz is open
-            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || showQuiz) {
+            // Ignore if typing in input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
                 return;
             }
 
@@ -149,7 +149,7 @@ export default function VisualizationPage() {
                 case "KeyQ":
                     if (hasQuiz && hasCompletedVisualization) {
                         e.preventDefault();
-                        setShowQuiz(true);
+                        router.push(`/quiz/${slug}`);
                     }
                     break;
                 case "Escape":
@@ -165,7 +165,7 @@ export default function VisualizationPage() {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [sedangBerjalan, handlePlay, handlePause, handleNext, handlePrev, handleReset, toggleFullscreen, isFullscreen, showQuiz, hasQuiz, hasCompletedVisualization]);
+    }, [sedangBerjalan, handlePlay, handlePause, handleNext, handlePrev, handleReset, toggleFullscreen, isFullscreen, hasQuiz, hasCompletedVisualization, router, slug]);
 
     // 404 handling
     if (!visualization) {
@@ -185,7 +185,8 @@ export default function VisualizationPage() {
         );
     }
 
-    const { config, Component } = visualization;
+    const { config } = visualization;
+    const LazyComponent = getLazyComponent(slug);
 
     // Swipe handlers for mobile
     const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -271,24 +272,24 @@ export default function VisualizationPage() {
                                 <div className="flex items-center gap-2">
                                     {/* Quiz button */}
                                     {hasQuiz && (
-                                        <motion.button
-                                            onClick={() => setShowQuiz(true)}
+                                        <Link
+                                            href={hasCompletedVisualization ? `/quiz/${slug}` : "#"}
                                             className={`
                                                 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs sm:text-sm font-medium
                                                 transition-all duration-200
                                                 ${hasCompletedVisualization
                                                     ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/30"
-                                                    : "bg-slate-700/50 text-slate-400"
+                                                    : "bg-slate-700/50 text-slate-400 cursor-not-allowed"
                                                 }
                                             `}
-                                            whileHover={hasCompletedVisualization ? { scale: 1.05 } : {}}
-                                            whileTap={hasCompletedVisualization ? { scale: 0.95 } : {}}
-                                            disabled={!hasCompletedVisualization}
                                             title={hasCompletedVisualization ? "Mulai Quiz (Q)" : "Selesaikan visualisasi dulu"}
+                                            onClick={(e) => {
+                                                if (!hasCompletedVisualization) e.preventDefault();
+                                            }}
                                         >
                                             <AcademicCapIcon className="w-4 h-4" />
                                             <span className="hidden sm:inline">Quiz</span>
-                                        </motion.button>
+                                        </Link>
                                     )}
 
                                     {/* Fullscreen button */}
@@ -348,10 +349,23 @@ export default function VisualizationPage() {
                         onDragEnd={handleDragEnd}
                         style={{ touchAction: "pan-y" }}
                     >
-                        <Component
-                            langkahAktif={langkahAktif}
-                            sedangBerjalan={sedangBerjalan}
-                        />
+                        <ErrorBoundary>
+                            <Suspense fallback={
+                                <div className="flex items-center justify-center h-full">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                                        <span className="text-slate-400 text-sm">Memuat visualisasi...</span>
+                                    </div>
+                                </div>
+                            }>
+                                {LazyComponent && (
+                                    <LazyComponent
+                                        langkahAktif={langkahAktif}
+                                        sedangBerjalan={sedangBerjalan}
+                                    />
+                                )}
+                            </Suspense>
+                        </ErrorBoundary>
 
                         {/* Mobile swipe hints */}
                         <div className="absolute inset-y-0 left-0 w-8 flex items-center justify-center sm:hidden pointer-events-none">
@@ -385,14 +399,12 @@ export default function VisualizationPage() {
                                         <span className="text-sm text-purple-300">
                                             Siap untuk quiz?
                                         </span>
-                                        <motion.button
-                                            onClick={() => setShowQuiz(true)}
-                                            className="px-2 py-1 bg-purple-500 rounded text-xs text-white font-medium"
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
+                                        <Link
+                                            href={`/quiz/${slug}`}
+                                            className="px-2 py-1 bg-purple-500 rounded text-xs text-white font-medium hover:bg-purple-600 transition-colors"
                                         >
                                             Mulai
-                                        </motion.button>
+                                        </Link>
                                     </div>
                                 </motion.div>
                             )}
@@ -445,20 +457,6 @@ export default function VisualizationPage() {
 
                 </main>
             </div>
-
-            {/* Quiz Modal */}
-            <AnimatePresence>
-                {showQuiz && config.quiz && (
-                    <QuizMode
-                        questions={config.quiz}
-                        slug={slug}
-                        onComplete={(score, total) => {
-                            console.log(`Quiz completed: ${score}/${total}`);
-                        }}
-                        onClose={() => setShowQuiz(false)}
-                    />
-                )}
-            </AnimatePresence>
         </PageTransition>
     );
 }

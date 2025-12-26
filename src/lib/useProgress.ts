@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import * as storage from "./storage";
 
 // Types
 export interface VisualizationProgress {
@@ -47,27 +48,17 @@ export function useProgress() {
     const [progress, setProgress] = useState<ProgressData>({});
     const [isLoaded, setIsLoaded] = useState(false);
 
-    // Load from localStorage on mount
+    // Load from storage on mount
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                setProgress(JSON.parse(stored));
-            }
-        } catch (error) {
-            console.error("Failed to load progress:", error);
-        }
+        const stored = storage.getJSON<ProgressData>(STORAGE_KEY, {});
+        setProgress(stored);
         setIsLoaded(true);
     }, []);
 
-    // Save to localStorage whenever progress changes
+    // Save to storage whenever progress changes
     useEffect(() => {
         if (isLoaded) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-            } catch (error) {
-                console.error("Failed to save progress:", error);
-            }
+            storage.setJSON(STORAGE_KEY, progress);
         }
     }, [progress, isLoaded]);
 
@@ -108,32 +99,28 @@ export function useProgress() {
 
     // Update streak
     const updateStreak = useCallback(() => {
-        try {
-            const stored = localStorage.getItem(STREAK_KEY);
-            const today = getTodayString();
+        const streakData = storage.getJSON<{ lastDate: string; count: number } | null>(STREAK_KEY, null);
+        const today = getTodayString();
 
-            if (stored) {
-                const { lastDate, count } = JSON.parse(stored);
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayString = yesterday.toISOString().split("T")[0];
+        if (streakData) {
+            const { lastDate, count } = streakData;
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayString = yesterday.toISOString().split("T")[0];
 
-                if (lastDate === today) {
-                    // Already counted today
-                    return;
-                } else if (lastDate === yesterdayString) {
-                    // Continue streak
-                    localStorage.setItem(STREAK_KEY, JSON.stringify({ lastDate: today, count: count + 1 }));
-                } else {
-                    // Streak broken, start new
-                    localStorage.setItem(STREAK_KEY, JSON.stringify({ lastDate: today, count: 1 }));
-                }
+            if (lastDate === today) {
+                // Already counted today
+                return;
+            } else if (lastDate === yesterdayString) {
+                // Continue streak
+                storage.setJSON(STREAK_KEY, { lastDate: today, count: count + 1 });
             } else {
-                // First time
-                localStorage.setItem(STREAK_KEY, JSON.stringify({ lastDate: today, count: 1 }));
+                // Streak broken, start new
+                storage.setJSON(STREAK_KEY, { lastDate: today, count: 1 });
             }
-        } catch (error) {
-            console.error("Failed to update streak:", error);
+        } else {
+            // First time
+            storage.setJSON(STREAK_KEY, { lastDate: today, count: 1 });
         }
     }, []);
 
@@ -157,23 +144,19 @@ export function useProgress() {
         let streak = 0;
         let lastActivityDate: string | null = null;
 
-        try {
-            const stored = localStorage.getItem(STREAK_KEY);
-            if (stored) {
-                const { lastDate, count } = JSON.parse(stored);
-                const today = getTodayString();
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayString = yesterday.toISOString().split("T")[0];
+        const streakData = storage.getJSON<{ lastDate: string; count: number } | null>(STREAK_KEY, null);
+        if (streakData) {
+            const { lastDate, count } = streakData;
+            const today = getTodayString();
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayString = yesterday.toISOString().split("T")[0];
 
-                // Streak is valid if last activity was today or yesterday
-                if (lastDate === today || lastDate === yesterdayString) {
-                    streak = count;
-                }
-                lastActivityDate = lastDate;
+            // Streak is valid if last activity was today or yesterday
+            if (lastDate === today || lastDate === yesterdayString) {
+                streak = count;
             }
-        } catch (error) {
-            console.error("Failed to get streak:", error);
+            lastActivityDate = lastDate;
         }
 
         return {
@@ -190,7 +173,7 @@ export function useProgress() {
     // Reset all progress
     const resetProgress = useCallback(() => {
         setProgress({});
-        localStorage.removeItem(STREAK_KEY);
+        storage.removeItem(STREAK_KEY);
     }, []);
 
     return {

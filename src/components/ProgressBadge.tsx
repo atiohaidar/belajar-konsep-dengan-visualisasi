@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { useProgress } from "@/lib/useProgress";
 import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
@@ -8,7 +9,7 @@ interface ProgressBadgeProps {
     hasQuiz: boolean;
 }
 
-export default function ProgressBadge({ slug, hasQuiz }: ProgressBadgeProps) {
+function ProgressBadge({ slug, hasQuiz }: ProgressBadgeProps) {
     const { getProgress, isLoaded } = useProgress();
 
     if (!isLoaded) return null;
@@ -37,3 +38,5 @@ export default function ProgressBadge({ slug, hasQuiz }: ProgressBadgeProps) {
         </div>
     );
 }
+
+export default memo(ProgressBadge);

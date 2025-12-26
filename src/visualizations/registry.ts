@@ -1,12 +1,14 @@
 // Registry: Daftar semua visualisasi yang tersedia
 // Untuk menambah visualisasi baru, import dan tambahkan ke array di bawah
 
-import { VisualizationModule } from "./types";
+import { lazy, ComponentType } from "react";
+import { VisualizationModule, VisualizationProps, VisualizationConfig } from "./types";
 import * as httpRequest from "./http-request";
 import * as websocket from "./websocket";
+import * as glbb from "./glbb";
 
 // Daftar semua visualisasi
-// Tambahkan visualisasi baru di sini
+// Tambahkan visualisasi baru di sini - Force refresh
 export const visualizations: VisualizationModule[] = [
     {
         config: httpRequest.config,
@@ -15,6 +17,10 @@ export const visualizations: VisualizationModule[] = [
     {
         config: websocket.config,
         Component: websocket.Component,
+    },
+    {
+        config: glbb.config,
+        Component: glbb.Component,
     },
 ];
 
@@ -26,4 +32,42 @@ export function getVisualizationBySlug(slug: string): VisualizationModule | unde
 // Helper: Dapatkan semua config untuk listing
 export function getAllConfigs() {
     return visualizations.map((v) => v.config);
+}
+
+// Lazy loading map for dynamic imports
+const lazyComponents: Record<string, ComponentType<VisualizationProps>> = {};
+
+/**
+ * Get a lazy-loaded visualization component
+ * Uses dynamic import for code splitting
+ */
+export function getLazyComponent(slug: string): ComponentType<VisualizationProps> | null {
+    // Return cached lazy component if exists
+    if (lazyComponents[slug]) {
+        return lazyComponents[slug];
+    }
+
+    // Create lazy component based on slug
+    const LazyComponent = lazy(async () => {
+        switch (slug) {
+            case "http-request":
+                return import("./http-request").then(m => ({ default: m.Component }));
+            case "websocket":
+                return import("./websocket").then(m => ({ default: m.Component }));
+            case "glbb":
+                return import("./glbb").then(m => ({ default: m.Component }));
+            default:
+                throw new Error(`Visualization "${slug}" not found`);
+        }
+    });
+
+    lazyComponents[slug] = LazyComponent;
+    return LazyComponent;
+}
+
+/**
+ * Get config by slug (sync, for metadata)
+ */
+export function getConfigBySlug(slug: string): VisualizationConfig | undefined {
+    return visualizations.find(v => v.config.slug === slug)?.config;
 }

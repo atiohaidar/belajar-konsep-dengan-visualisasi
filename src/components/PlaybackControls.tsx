@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import {
     PlayIcon,
@@ -20,7 +21,7 @@ interface PlaybackControlsProps {
     onReset: () => void;
 }
 
-export default function PlaybackControls({
+function PlaybackControls({
     sedangBerjalan,
     langkahAktif,
     totalLangkah,
@@ -118,3 +119,4 @@ export default function PlaybackControls({
     );
 }
 
+export default memo(PlaybackControls);
