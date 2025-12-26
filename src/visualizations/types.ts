@@ -27,11 +27,21 @@ export interface QuizQuestion {
 /**
  * Konfigurasi metadata visualisasi
  */
+export type VisualizationCategory =
+    | "programming"   // HTTP, WebSocket, REST API, Database
+    | "sains"         // DNA, Atom, Tata Surya, Fotosintesis
+    | "matematika"    // Algoritma, Graph, Sorting
+    | "fisika"        // Listrik, Gelombang, Mekanika
+    | "kimia"         // Reaksi kimia, Molekul
+    | "ekonomi"       // Supply-demand, Inflasi
+    | "sejarah"       // Timeline, Peradaban
+    | "lainnya";      // Kategori umum
+
 export interface VisualizationConfig {
     slug: string;            // URL slug (e.g., "http-request")
     judul: string;           // Judul tampilan
     deskripsi: string;       // Deskripsi singkat
-    kategori: "network" | "security" | "storage" | "protocol";
+    kategori: VisualizationCategory;
     warna: string;           // Warna tema (Tailwind class)
     icon: string;            // Emoji atau icon
     langkahLangkah: VisualizationStep[];

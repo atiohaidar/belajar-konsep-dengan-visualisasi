@@ -4,7 +4,7 @@ export const config: VisualizationConfig = {
     slug: "http-request",
     judul: "Cara Kerja HTTP Request",
     deskripsi: "Pelajari bagaimana browser mengirim request ke server dan menerima response",
-    kategori: "protocol",
+    kategori: "programming",
     warna: "blue",
     icon: "🌐",
     langkahLangkah: [

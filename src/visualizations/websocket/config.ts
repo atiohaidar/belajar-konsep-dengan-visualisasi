@@ -4,7 +4,7 @@ export const config: VisualizationConfig = {
     slug: "websocket",
     judul: "Cara Kerja WebSocket",
     deskripsi: "Pelajari bagaimana WebSocket memungkinkan komunikasi dua arah secara real-time antara browser dan server",
-    kategori: "protocol",
+    kategori: "programming",
     warna: "purple",
     icon: "🔌",
     langkahLangkah: [
