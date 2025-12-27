@@ -14,6 +14,7 @@ export default function GerakParabolaVisualization({
     const [v0, setV0] = useState(20); // m/s
     const [angle, setAngle] = useState(45); // degrees
     const [g, setG] = useState(10); // m/s²
+    const [manualTime, setManualTime] = useState(0); // Manual time input
 
     // Animation State
     const [animationProgress, setAnimationProgress] = useState(0);
@@ -32,10 +33,11 @@ export default function GerakParabolaVisualization({
     const maxDistance = vx * totalTime; // Range
     const maxHeight = (vy0 * vy0) / (2 * g); // H max
 
-    // Current State based on animation
-    const currentTime = totalTime * animationProgress;
+    // Current State based on animation OR manual time
+    // If simulating, use animation progress. Otherwise use manual time.
+    const currentTime = isSimulating ? totalTime * animationProgress : Math.min(manualTime, totalTime);
     const currentX = vx * currentTime;
-    const currentY = vy0 * currentTime - 0.5 * g * currentTime * currentTime;
+    const currentY = Math.max(0, vy0 * currentTime - 0.5 * g * currentTime * currentTime);
     const currentVy = vy0 - g * currentTime;
     const currentV = Math.sqrt(vx * vx + currentVy * currentVy); // Resultant velocity
 
@@ -74,16 +76,25 @@ export default function GerakParabolaVisualization({
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
+                // Animation finished - set manualTime to totalTime so it stays at end position
+                setManualTime(totalTime);
                 setIsSimulating(false);
             }
         };
 
         requestAnimationFrame(animate);
-    }, [isSimulating]);
+    }, [isSimulating, totalTime]);
 
     const handleParamChange = (setter: (v: number) => void, val: number) => {
         setter(val);
         setAnimationProgress(0);
+        setManualTime(0);
+        setIsSimulating(false);
+    };
+
+    const handleTimeChange = (val: number) => {
+        setManualTime(val);
+        setAnimationProgress(val / totalTime);
         setIsSimulating(false);
     };
 
@@ -139,80 +150,81 @@ export default function GerakParabolaVisualization({
                 }}
             />
 
-            {/* Top Section: Controls & Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 z-10 w-full max-w-6xl mx-auto">
+            {/* Top Layout: Formula & Controls */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 z-10 w-full max-w-6xl mx-auto">
+                {/* Left: Formula Card */}
+                <div className="bg-slate-800/80 backdrop-blur rounded-xl p-5 border border-slate-700 h-full flex flex-col justify-center">
+                    <h3 className="text-blue-400 font-bold mb-3 text-center lg:text-left">Rumus Gerak Parabola</h3>
+                    <div className="flex flex-col gap-3 font-mono text-sm">
+                        <div className="bg-slate-900/50 p-3 rounded-lg flex justify-between items-center group hover:bg-slate-900 transition-colors">
+                            <span>
+                                <span className="text-blue-400">vx</span> = <span className="text-green-400">v₀</span> cos <span className="text-yellow-400">θ</span>
+                            </span>
+                            <span className="text-slate-500 text-xs text-right group-hover:text-slate-300">= {v0} × cos({angle}°) = <span className="text-blue-400 font-bold">{vx.toFixed(2)} m/s</span></span>
+                        </div>
+                        <div className="bg-slate-900/50 p-3 rounded-lg flex justify-between items-center group hover:bg-slate-900 transition-colors">
+                            <span>
+                                <span className="text-purple-400">vy₀</span> = <span className="text-green-400">v₀</span> sin <span className="text-yellow-400">θ</span>
+                            </span>
+                            <span className="text-slate-500 text-xs text-right group-hover:text-slate-300">= {v0} × sin({angle}°) = <span className="text-purple-400 font-bold">{vy0.toFixed(2)} m/s</span></span>
+                        </div>
+                        <div className="bg-slate-900/50 p-3 rounded-lg flex justify-between items-center group hover:bg-slate-900 transition-colors">
+                            <span>
+                                <span className="text-orange-400">H<sub>max</sub></span> = <span className="text-purple-400">vy₀²</span> / 2<span className="text-red-400">g</span>
+                            </span>
+                            <span className="text-slate-500 text-xs text-right group-hover:text-slate-300">= ({vy0.toFixed(1)})² / 2({g}) = <span className="text-orange-400 font-bold">{maxHeight.toFixed(2)} m</span></span>
+                        </div>
+                        <div className="bg-slate-900/50 p-3 rounded-lg flex justify-between items-center group hover:bg-slate-900 transition-colors">
+                            <span>
+                                <span className="text-cyan-400">R</span> = <span className="text-blue-400">vx</span> × <span className="text-white">t<sub>total</sub></span>
+                            </span>
+                            <span className="text-slate-500 text-xs text-right group-hover:text-slate-300">= {vx.toFixed(2)} × {totalTime.toFixed(2)} = <span className="text-cyan-400 font-bold">{maxDistance.toFixed(2)} m</span></span>
+                        </div>
+                    </div>
+                </div>
 
-                {/* 1. Controls */}
-                <div className="bg-slate-800/80 backdrop-blur rounded-xl p-5 border border-slate-700 space-y-4">
-                    <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-white font-bold text-lg">Parameter</h3>
+                {/* Right: Controls & Stats */}
+                <div className="bg-slate-800/80 backdrop-blur rounded-xl p-5 border border-slate-700">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-white font-bold">Parameter</h3>
                         <button
                             onClick={restartSimulation}
-                            className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all transform active:scale-95
+                            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all transform active:scale-95 flex items-center gap-2
                                 ${isSimulating
                                     ? "bg-slate-700 text-slate-400 cursor-not-allowed"
                                     : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20"
                                 }`}
                             disabled={isSimulating}
                         >
-                            {isSimulating ? "Simulasi..." : "▶ Tembak!"}
+                            {isSimulating ? "Simulasi Berjalan..." : "▶ Tembak!"}
                         </button>
                     </div>
 
-                    <SmartNumberInput
-                        label="Kecepatan Awal (v₀)"
-                        value={v0}
-                        onChange={(v) => handleParamChange(setV0, v)}
-                        min={1} max={100} step={1}
-                        unit="m/s" color="green"
-                        disabled={isSimulating}
-                    />
-                    <SmartNumberInput
-                        label="Sudut Elevasi (θ)"
-                        value={angle}
-                        onChange={(v) => handleParamChange(setAngle, v)}
-                        min={0} max={90} step={1}
-                        unit="°" color="yellow"
-                        disabled={isSimulating}
-                    />
-                    <SmartNumberInput
-                        label="Gravitasi (g)"
-                        value={g}
-                        onChange={(v) => handleParamChange(setG, v)}
-                        min={1} max={20} step={0.1}
-                        unit="m/s²" color="purple"
-                        disabled={isSimulating}
-                    />
-                </div>
-
-                {/* 2. Realtime Stats */}
-                <div className="col-span-1 lg:col-span-2 bg-slate-800/80 backdrop-blur rounded-xl p-5 border border-slate-700 flex flex-col justify-center">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                            <div className="text-xs text-slate-400">Waktu (t)</div>
-                            <div className="text-xl font-mono font-bold text-white">{currentTime.toFixed(2)}s</div>
-                            <div className="text-[10px] text-slate-500">Total: {totalTime.toFixed(2)}s</div>
-                        </div>
-                        <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                            <div className="text-xs text-slate-400">Posisi X</div>
-                            <div className="text-xl font-mono font-bold text-blue-400">{currentX.toFixed(2)}m</div>
-                            <div className="text-[10px] text-slate-500">Max: {maxDistance.toFixed(2)}m</div>
-                        </div>
-                        <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                            <div className="text-xs text-slate-400">Posisi Y</div>
-                            <div className="text-xl font-mono font-bold text-purple-400">{currentY.toFixed(2)}m</div>
-                            <div className="text-[10px] text-slate-500">Max: {maxHeight.toFixed(2)}m</div>
-                        </div>
-                        <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
-                            <div className="text-xs text-slate-400">Kecepatan (v)</div>
-                            <div className="text-xl font-mono font-bold text-green-400">{currentV.toFixed(2)} m/s</div>
-                            <div className="text-[10px] text-slate-500">vy: {currentVy.toFixed(1)}</div>
-                        </div>
-                    </div>
-
-                    <div className="mt-4 flex flex-wrap gap-2 text-xs font-mono text-slate-400">
-                        <div className="bg-slate-900 px-2 py-1 rounded">vx = v₀ cos θ = {vx.toFixed(2)} m/s (Konstan)</div>
-                        <div className="bg-slate-900 px-2 py-1 rounded">vy₀ = v₀ sin θ = {vy0.toFixed(2)} m/s</div>
+                    <div className="space-y-4">
+                        <SmartNumberInput
+                            label="Kecepatan Awal (v₀)"
+                            value={v0}
+                            onChange={(v) => handleParamChange(setV0, v)}
+                            min={1} max={100} step={1}
+                            unit="m/s" color="green"
+                            disabled={isSimulating}
+                        />
+                        <SmartNumberInput
+                            label="Sudut Elevasi (θ)"
+                            value={angle}
+                            onChange={(v) => handleParamChange(setAngle, v)}
+                            min={1} max={89} step={1}
+                            unit="°" color="yellow"
+                            disabled={isSimulating}
+                        />
+                        <SmartNumberInput
+                            label="Gravitasi (g)"
+                            value={g}
+                            onChange={(v) => handleParamChange(setG, v)}
+                            min={1} max={20} step={0.5}
+                            unit="m/s²" color="purple"
+                            disabled={isSimulating}
+                        />
                     </div>
                 </div>
             </div>
@@ -284,9 +296,31 @@ export default function GerakParabolaVisualization({
                     </div>
                 </div>
             </div>
-
+            {/* Time Slider - untuk scrubbing setelah animasi */}
+            <div className="w-full max-w-6xl mx-auto bg-slate-800/80 backdrop-blur rounded-xl p-4 border border-slate-700">
+                <div className="flex items-center gap-4">
+                    <div className="text-sm text-slate-400 whitespace-nowrap">Waktu (t):</div>
+                    <input
+                        type="range"
+                        min={0}
+                        max={totalTime || 0.1}
+                        step={0.01}
+                        value={currentTime}
+                        onChange={(e) => handleTimeChange(parseFloat(e.target.value))}
+                        disabled={isSimulating}
+                        className="flex-1 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                    <div className="text-lg font-mono font-bold text-purple-400 min-w-[80px] text-right">
+                        {currentTime.toFixed(2)}s
+                    </div>
+                    <div className="text-xs text-slate-500">/ {totalTime.toFixed(2)}s</div>
+                </div>
+                <div className="text-[10px] text-slate-500 mt-2 text-center">
+                    💡 Geser slider untuk melihat posisi pada waktu tertentu setelah animasi selesai
+                </div>
+            </div>
             {/* Graphs Section - Using LineGraph Component */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-6xl mx-auto pb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-6xl mx-auto">
                 <LineGraph
                     title="Grafik Ketinggian vs Waktu (y-t)"
                     xLabel="t (s)"
@@ -309,6 +343,43 @@ export default function GerakParabolaVisualization({
                     xDomain={[0, Math.max(totalTime, 0.1)]}
                     graphHeight={180}
                 />
+            </div>
+
+
+
+            {/* Bottom: Real-time Stats with Formulas */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-6xl mx-auto">
+                {/* Position X Calculation */}
+                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <div className="text-xs text-slate-400 mb-2 font-mono">Posisi Horizontal (x)</div>
+                    <div className="font-mono text-sm text-slate-300 mb-1">x = vx · t</div>
+                    <div className="font-mono text-lg text-white">= {vx.toFixed(2)} × {currentTime.toFixed(2)}</div>
+                    <div className="font-mono text-2xl font-bold text-blue-400 mt-1">= {currentX.toFixed(2)} m</div>
+                </div>
+
+                {/* Position Y Calculation */}
+                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <div className="text-xs text-slate-400 mb-2 font-mono">Posisi Vertikal (y)</div>
+                    <div className="font-mono text-sm text-slate-300 mb-1">y = vy₀·t − ½·g·t²</div>
+                    <div className="font-mono text-lg text-white">= ({vy0.toFixed(2)})({currentTime.toFixed(2)}) − ½({g})({currentTime.toFixed(2)})²</div>
+                    <div className="font-mono text-2xl font-bold text-purple-400 mt-1">= {currentY.toFixed(2)} m</div>
+                </div>
+
+                {/* Velocity Y Calculation */}
+                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <div className="text-xs text-slate-400 mb-2 font-mono">Kecepatan Vertikal (vy)</div>
+                    <div className="font-mono text-sm text-slate-300 mb-1">vy = vy₀ − g·t</div>
+                    <div className="font-mono text-lg text-white">= {vy0.toFixed(2)} − ({g})({currentTime.toFixed(2)})</div>
+                    <div className="font-mono text-2xl font-bold text-green-400 mt-1">= {currentVy.toFixed(2)} m/s</div>
+                </div>
+
+                {/* Total Velocity Calculation */}
+                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                    <div className="text-xs text-slate-400 mb-2 font-mono">Kecepatan Total (v)</div>
+                    <div className="font-mono text-sm text-slate-300 mb-1">v = √(vx² + vy²)</div>
+                    <div className="font-mono text-lg text-white">= √(({vx.toFixed(2)})² + ({currentVy.toFixed(2)})²)</div>
+                    <div className="font-mono text-2xl font-bold text-orange-400 mt-1">= {currentV.toFixed(2)} m/s</div>
+                </div>
             </div>
         </div>
     );

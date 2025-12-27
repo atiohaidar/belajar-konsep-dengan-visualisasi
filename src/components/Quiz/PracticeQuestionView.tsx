@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PracticeQuestion } from "@/visualizations/types";
 import GLBBPracticeViz from "./GlbbPracticeViz";
+import ProjectilePracticeViz from "./ProjectilePracticeViz";
 
 interface PracticeQuestionProps {
     question: PracticeQuestion;
@@ -39,8 +40,17 @@ export default function PracticeQuestionView({ question, onComplete, isCompleted
                             variables={question.variables}
                             userAnswer={submittedAnswer}
                             correctAnswer={question.correctAnswer}
-                            caseType={question.case}
+                            caseType={question.case as 'glbb-distance' | 'glbb-velocity'}
                             isRunning={isCompleted} // Run animation when submitted
+                        />
+                    )}
+                    {question.case.startsWith("projectile") && (
+                        <ProjectilePracticeViz
+                            variables={question.variables}
+                            userAnswer={submittedAnswer}
+                            correctAnswer={question.correctAnswer}
+                            caseType={question.case as 'projectile-max-height' | 'projectile-range'}
+                            isRunning={isCompleted}
                         />
                     )}
                 </div>

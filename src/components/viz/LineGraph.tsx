@@ -50,18 +50,15 @@ export default function LineGraph({
     const mapX = (x: number) => ((x - xMin) / xRange) * 100;
     const mapY = (y: number) => 100 - ((y - computedYMin) / computedYRange) * 100;
 
-    // Filter data points to only show up to currentX (progressive drawing)
     const visiblePoints = currentX !== undefined
         ? dataPoints.filter(p => p.x <= currentX)
         : dataPoints;
 
-    // Build path for visible portion only
     const pathD = visiblePoints.length > 0
         ? `M ${mapX(visiblePoints[0].x)} ${mapY(visiblePoints[0].y)} ` +
         visiblePoints.slice(1).map(p => `L ${mapX(p.x)} ${mapY(p.y)}`).join(' ')
         : '';
 
-    // Add current point to the path if it's between data points
     let finalPathD = pathD;
     if (currentX !== undefined && currentY !== undefined && visiblePoints.length > 0) {
         const lastVisibleX = visiblePoints[visiblePoints.length - 1].x;
@@ -85,8 +82,13 @@ export default function LineGraph({
 
             {/* Graph Container */}
             <div className="flex">
-                {/* Y Axis Labels */}
-                <div className="flex flex-col justify-between text-[9px] text-slate-400 pr-1" style={{ width: '32px', height: graphHeight }}>
+                {/* Y Axis Label (rotated, left side) */}
+                <div className="flex items-center justify-center text-[9px] text-slate-400" style={{ width: '14px', height: graphHeight }}>
+                    <span className="-rotate-90 whitespace-nowrap">{yLabel}</span>
+                </div>
+
+                {/* Y Axis Values */}
+                <div className="flex flex-col justify-between text-[9px] text-slate-400 pr-1" style={{ width: '28px', height: graphHeight }}>
                     <span className="text-right leading-none">{computedYMax.toFixed(0)}</span>
                     <span className="text-right leading-none">{((computedYMin + computedYMax) / 2).toFixed(0)}</span>
                     <span className="text-right leading-none">{computedYMin.toFixed(0)}</span>
@@ -117,7 +119,7 @@ export default function LineGraph({
                                 return null;
                             })()}
 
-                            {/* Data Line - only draws up to current position */}
+                            {/* Data Line */}
                             {finalPathD && (
                                 <path
                                     d={finalPathD}
@@ -145,19 +147,18 @@ export default function LineGraph({
                         )}
                     </div>
 
-                    {/* X Axis Labels */}
+                    {/* X Axis Values */}
                     <div className="flex justify-between text-[9px] text-slate-400 pt-1">
                         <span>{xMin.toFixed(1)}</span>
                         <span>{((xMin + xMax) / 2).toFixed(1)}</span>
                         <span>{xMax.toFixed(1)}</span>
                     </div>
-                </div>
-            </div>
 
-            {/* Axis Labels */}
-            <div className="flex justify-between text-[9px] text-slate-500 mt-1">
-                <span>{yLabel}</span>
-                <span>{xLabel}</span>
+                    {/* X Axis Label (centered at bottom) */}
+                    <div className="text-center text-[9px] text-slate-400 mt-1">
+                        {xLabel}
+                    </div>
+                </div>
             </div>
         </div>
     );
