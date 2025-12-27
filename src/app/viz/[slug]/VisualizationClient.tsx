@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import { useRef, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
@@ -9,6 +9,10 @@ import PlaybackControls from "@/components/PlaybackControls";
 import PageTransition from "@/components/PageTransition";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useProgress } from "@/lib/useProgress";
+import { useVisualization } from "@/lib/hooks/useVisualization";
+import { useFullscreen } from "@/lib/hooks/useFullscreen";
+import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
+import { ANIMATION_DURATIONS } from "@/lib/constants";
 import {
     ArrowLeftIcon,
     ArrowsPointingOutIcon,
@@ -17,155 +21,56 @@ import {
     ChevronLeftIcon,
     ChevronRightIcon
 } from "@heroicons/react/24/solid";
+import { useState } from "react";
 
 export default function VisualizationClient() {
     const params = useParams();
     const router = useRouter();
     const slug = params.slug as string;
-
-    const visualization = getVisualizationBySlug(slug);
-
-    const [langkahAktif, setLangkahAktif] = useState(0);
-    const [sedangBerjalan, setSedangBerjalan] = useState(false);
-    const [hoveredStep, setHoveredStep] = useState<number | null>(null);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const [hasCompletedVisualization, setHasCompletedVisualization] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const totalLangkah = visualization?.config.langkahLangkah.length ?? 0;
-    const langkahSekarang = visualization?.config.langkahLangkah[langkahAktif];
-    const hasQuiz = (visualization?.config.quiz?.length ?? 0) > 0;
-
+    const visualization = getVisualizationBySlug(slug);
     const { markCompleted } = useProgress();
 
-    // Detect when visualization is complete
-    useEffect(() => {
-        if (langkahAktif === totalLangkah - 1 && !sedangBerjalan) {
-            setHasCompletedVisualization(true);
-            markCompleted(slug);
-        }
-    }, [langkahAktif, totalLangkah, sedangBerjalan, slug, markCompleted]);
+    // Use extracted hooks for cleaner code
+    const {
+        langkahAktif,
+        sedangBerjalan,
+        totalLangkah,
+        langkahSekarang,
+        hasCompletedVisualization,
+        handlePlay,
+        handlePause,
+        handleNext,
+        handlePrev,
+        handleReset,
+        setLangkahAktif,
+        setSedangBerjalan,
+    } = useVisualization({
+        config: visualization?.config ?? { slug: "", judul: "", deskripsi: "", kategori: "lainnya", warna: "", icon: "", langkahLangkah: [] },
+        onComplete: markCompleted,
+    });
 
-    // Auto-play logic
-    useEffect(() => {
-        if (!sedangBerjalan || !visualization) return;
+    const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
 
-        const durasi = langkahSekarang?.durasi ?? 2000;
-
-        const timer = setTimeout(() => {
-            if (langkahAktif < totalLangkah - 1) {
-                setLangkahAktif((prev) => prev + 1);
-            } else {
-                setSedangBerjalan(false);
-            }
-        }, durasi);
-
-        return () => clearTimeout(timer);
-    }, [sedangBerjalan, langkahAktif, totalLangkah, langkahSekarang?.durasi, visualization]);
-
-    const handlePlay = useCallback(() => {
-        if (langkahAktif === totalLangkah - 1) {
-            setLangkahAktif(0);
-        }
-        setSedangBerjalan(true);
-    }, [langkahAktif, totalLangkah]);
-
-    const handlePause = useCallback(() => {
-        setSedangBerjalan(false);
-    }, []);
-
-    const handleNext = useCallback(() => {
-        if (langkahAktif < totalLangkah - 1) {
-            setLangkahAktif((prev) => prev + 1);
-        }
-    }, [langkahAktif, totalLangkah]);
-
-    const handlePrev = useCallback(() => {
-        if (langkahAktif > 0) {
-            setLangkahAktif((prev) => prev - 1);
-        }
-    }, [langkahAktif]);
-
-    const handleReset = useCallback(() => {
-        setSedangBerjalan(false);
-        setLangkahAktif(0);
-    }, []);
-
-    // Fullscreen toggle
-    const toggleFullscreen = useCallback(() => {
-        if (!document.fullscreenElement) {
-            containerRef.current?.requestFullscreen();
-            setIsFullscreen(true);
-        } else {
-            document.exitFullscreen();
-            setIsFullscreen(false);
-        }
-    }, []);
-
-    // Listen for fullscreen change
-    useEffect(() => {
-        const handleFullscreenChange = () => {
-            setIsFullscreen(!!document.fullscreenElement);
-        };
-        document.addEventListener("fullscreenchange", handleFullscreenChange);
-        return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    }, []);
+    const hasQuiz = (visualization?.config.quiz?.length ?? 0) > 0;
 
     // Keyboard shortcuts
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Ignore if typing in input
-            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-                return;
-            }
+    useKeyboardShortcuts({
+        sedangBerjalan,
+        isFullscreen,
+        hasQuiz,
+        hasCompletedVisualization,
+        slug,
+        onPlay: handlePlay,
+        onPause: handlePause,
+        onNext: handleNext,
+        onPrev: handlePrev,
+        onReset: handleReset,
+        onToggleFullscreen: toggleFullscreen,
+    });
 
-            switch (e.code) {
-                case "Space":
-                    e.preventDefault();
-                    if (sedangBerjalan) {
-                        handlePause();
-                    } else {
-                        handlePlay();
-                    }
-                    break;
-                case "ArrowRight":
-                    e.preventDefault();
-                    setSedangBerjalan(false);
-                    handleNext();
-                    break;
-                case "ArrowLeft":
-                    e.preventDefault();
-                    setSedangBerjalan(false);
-                    handlePrev();
-                    break;
-                case "KeyR":
-                    e.preventDefault();
-                    handleReset();
-                    break;
-                case "KeyF":
-                    e.preventDefault();
-                    toggleFullscreen();
-                    break;
-                case "KeyQ":
-                    if (hasQuiz && hasCompletedVisualization) {
-                        e.preventDefault();
-                        router.push(`/quiz/${slug}`);
-                    }
-                    break;
-                case "Escape":
-                    e.preventDefault();
-                    if (isFullscreen) {
-                        document.exitFullscreen();
-                    } else {
-                        handlePause();
-                    }
-                    break;
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [sedangBerjalan, handlePlay, handlePause, handleNext, handlePrev, handleReset, toggleFullscreen, isFullscreen, hasQuiz, hasCompletedVisualization, router, slug]);
+    const [hoveredStep, setHoveredStep] = useState<number | null>(null);
 
     // 404 handling
     if (!visualization) {
@@ -190,13 +95,13 @@ export default function VisualizationClient() {
 
     // Swipe handlers for mobile
     const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-        const threshold = 50;
+        const threshold = ANIMATION_DURATIONS.SWIPE_THRESHOLD;
         if (info.offset.x < -threshold && langkahAktif < totalLangkah - 1) {
             setSedangBerjalan(false);
-            setLangkahAktif(prev => prev + 1);
+            setLangkahAktif(langkahAktif + 1);
         } else if (info.offset.x > threshold && langkahAktif > 0) {
             setSedangBerjalan(false);
-            setLangkahAktif(prev => prev - 1);
+            setLangkahAktif(langkahAktif - 1);
         }
     };
 
@@ -235,10 +140,7 @@ export default function VisualizationClient() {
                                     {config.langkahLangkah.map((step, index) => (
                                         <button
                                             key={step.id}
-                                            onClick={() => {
-                                                setSedangBerjalan(false);
-                                                setLangkahAktif(index);
-                                            }}
+                                            onClick={() => setLangkahAktif(index)}
                                             onMouseEnter={() => setHoveredStep(index)}
                                             onMouseLeave={() => setHoveredStep(null)}
                                             className={`
@@ -455,8 +357,6 @@ export default function VisualizationClient() {
                             </div>
                         </div>
                     )}
-
-
                 </main>
             </div>
         </PageTransition>

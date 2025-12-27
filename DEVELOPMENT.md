@@ -23,12 +23,22 @@ src/
 │   │   ├── Server.tsx            # Icon server animasi
 │   │   ├── Client.tsx            # Icon browser animasi
 │   │   ├── DataPacket.tsx        # Paket data bergerak
-│   │   └── Arrow.tsx             # Panah koneksi
+│   │   ├── Arrow.tsx             # Panah koneksi
+│   │   └── LineGraph.tsx         # Grafik garis animasi
 │   ├── PlaybackControls.tsx      # Kontrol play/pause/step
 │   └── QuizMode.tsx              # Komponen quiz
 │
 └── lib/
-    └── animations.ts             # Framer Motion variants
+    ├── animations.ts             # Framer Motion variants
+    ├── constants.ts              # ⭐ Centralized constants
+    ├── storage.ts                # LocalStorage utilities
+    ├── useProgress.ts            # Progress tracking hook
+    └── hooks/                    # ⭐ Reusable custom hooks
+        ├── index.ts              # Barrel export
+        ├── useVisualization.ts   # Playback state & controls
+        ├── useFullscreen.ts      # Fullscreen management
+        ├── useKeyboardShortcuts.ts # Keyboard handling
+        └── useQuiz.ts            # Quiz state management
 ```
 
 ---
@@ -109,19 +119,21 @@ export { default as Component } from "./NamaVisualization";
 
 ### Langkah 5: Daftarkan di Registry
 
-Edit `src/visualizations/registry.ts`:
+Edit `src/visualizations/registry.ts` - tambahkan ke `VISUALIZATION_MODULES`:
 
 ```typescript
 import * as namaKonsep from "./nama-konsep";
 
-export const visualizations: VisualizationModule[] = [
+// Tambahkan entry baru di sini (SINGLE SOURCE OF TRUTH)
+const VISUALIZATION_MODULES = {
+  "http-request": httpRequest,
+  "websocket": websocket,
   // ... existing
-  {
-    config: namaKonsep.config,
-    Component: namaKonsep.Component,
-  },
-];
+  "nama-konsep": namaKonsep,  // ⬅️ Tambahkan di sini
+} as const;
 ```
+
+> **Note:** Tidak perlu mengubah tempat lain! Array `visualizations` dan `getLazyComponent` akan otomatis menggunakan modules dari `VISUALIZATION_MODULES`.
 
 ---
 
@@ -225,6 +237,83 @@ Import dari `@/lib/animations`:
 - `packetMove(fromX, toX)` - Untuk DataPacket
 - `packetWithTrail(fromX, toX)` - Dengan trail effect
 - `staggerContainer`, `staggerContainerFast` - Untuk child stagger
+
+---
+
+## 🪝 Custom Hooks
+
+Import dari `@/lib/hooks`:
+
+### useVisualization
+Manage playback state dan controls untuk visualisasi.
+
+```typescript
+import { useVisualization } from "@/lib/hooks";
+
+const {
+  langkahAktif,
+  sedangBerjalan,
+  totalLangkah,
+  hasCompletedVisualization,
+  handlePlay,
+  handlePause,
+  handleNext,
+  handlePrev,
+  handleReset,
+  setLangkahAktif,
+} = useVisualization({
+  config: visualizationConfig,
+  onComplete: (slug) => console.log("Completed:", slug),
+});
+```
+
+### useFullscreen
+Manage fullscreen state.
+
+```typescript
+import { useFullscreen } from "@/lib/hooks";
+
+const containerRef = useRef<HTMLDivElement>(null);
+const { isFullscreen, toggleFullscreen } = useFullscreen(containerRef);
+```
+
+### useKeyboardShortcuts
+Handle keyboard shortcuts untuk visualisasi.
+
+```typescript
+import { useKeyboardShortcuts } from "@/lib/hooks";
+
+useKeyboardShortcuts({
+  sedangBerjalan,
+  isFullscreen,
+  hasQuiz,
+  hasCompletedVisualization,
+  slug,
+  onPlay: handlePlay,
+  onPause: handlePause,
+  onNext: handleNext,
+  onPrev: handlePrev,
+  onReset: handleReset,
+  onToggleFullscreen: toggleFullscreen,
+});
+```
+
+### useQuiz
+State management untuk quiz.
+
+```typescript
+import { useQuiz, getScoreEmoji, getScoreFeedback } from "@/lib/hooks";
+
+const {
+  currentQuestion,
+  selectedAnswer,
+  showResult,
+  isComplete,
+  handleSelectAnswer,
+  handleNext,
+  resetQuiz,
+} = useQuiz({ questions, slug, onSaveScore, onComplete });
+```
 
 ---
 

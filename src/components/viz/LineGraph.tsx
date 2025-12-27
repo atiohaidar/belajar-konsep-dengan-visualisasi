@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 interface LineGraphProps {
     title: string;
@@ -27,48 +27,69 @@ export default function LineGraph({
     xDomain,
     graphHeight = 120,
 }: LineGraphProps) {
-    const xValues = dataPoints.map(p => p.x);
-    const yValues = dataPoints.map(p => p.y);
+    // Memoize expensive calculations to prevent re-computation on every render
+    const graphData = useMemo(() => {
+        const xValues = dataPoints.map(p => p.x);
+        const yValues = dataPoints.map(p => p.y);
 
-    const xMinDefault = xValues.length > 0 ? Math.min(...xValues) : 0;
-    const xMaxDefault = xValues.length > 0 ? Math.max(...xValues) : 10;
-    const yMinDefault = yValues.length > 0 ? Math.min(...yValues) : 0;
-    const yMaxDefault = yValues.length > 0 ? Math.max(...yValues) : 10;
+        const xMinDefault = xValues.length > 0 ? Math.min(...xValues) : 0;
+        const xMaxDefault = xValues.length > 0 ? Math.max(...xValues) : 10;
+        const yMinDefault = yValues.length > 0 ? Math.min(...yValues) : 0;
+        const yMaxDefault = yValues.length > 0 ? Math.max(...yValues) : 10;
 
-    const xMin = xDomain ? xDomain[0] : xMinDefault;
-    const xMax = xDomain ? xDomain[1] : xMaxDefault;
-    const yMin = yDomain ? yDomain[0] : yMinDefault;
-    const yMax = yDomain ? yDomain[1] : yMaxDefault;
+        const xMin = xDomain ? xDomain[0] : xMinDefault;
+        const xMax = xDomain ? xDomain[1] : xMaxDefault;
+        const yMin = yDomain ? yDomain[0] : yMinDefault;
+        const yMax = yDomain ? yDomain[1] : yMaxDefault;
 
-    const xRange = Math.abs(xMax - xMin) < 1e-6 ? 1 : (xMax - xMin);
-    const yRange = Math.abs(yMax - yMin) < 1e-6 ? 1 : (yMax - yMin);
+        const xRange = Math.abs(xMax - xMin) < 1e-6 ? 1 : (xMax - xMin);
+        const yRange = Math.abs(yMax - yMin) < 1e-6 ? 1 : (yMax - yMin);
 
-    const computedYMin = yMin - yRange * 0.1;
-    const computedYMax = yMax + yRange * 0.1;
-    const computedYRange = computedYMax - computedYMin;
+        const computedYMin = yMin - yRange * 0.1;
+        const computedYMax = yMax + yRange * 0.1;
+        const computedYRange = computedYMax - computedYMin;
 
-    const mapX = (x: number) => ((x - xMin) / xRange) * 100;
-    const mapY = (y: number) => 100 - ((y - computedYMin) / computedYRange) * 100;
+        const mapX = (x: number) => ((x - xMin) / xRange) * 100;
+        const mapY = (y: number) => 100 - ((y - computedYMin) / computedYRange) * 100;
 
-    const visiblePoints = currentX !== undefined
-        ? dataPoints.filter(p => p.x <= currentX)
-        : dataPoints;
+        return {
+            xMin,
+            xMax,
+            yMin,
+            yMax,
+            computedYMin,
+            computedYMax,
+            mapX,
+            mapY,
+        };
+    }, [dataPoints, xDomain, yDomain]);
 
-    const pathD = visiblePoints.length > 0
-        ? `M ${mapX(visiblePoints[0].x)} ${mapY(visiblePoints[0].y)} ` +
-        visiblePoints.slice(1).map(p => `L ${mapX(p.x)} ${mapY(p.y)}`).join(' ')
-        : '';
+    const { xMin, xMax, yMin, yMax, computedYMin, computedYMax, mapX, mapY } = graphData;
 
-    let finalPathD = pathD;
-    if (currentX !== undefined && currentY !== undefined && visiblePoints.length > 0) {
-        const lastVisibleX = visiblePoints[visiblePoints.length - 1].x;
-        if (currentX > lastVisibleX) {
-            finalPathD += ` L ${mapX(currentX)} ${mapY(currentY)}`;
+    // Memoize path calculation separately as it depends on currentX/currentY
+    const { finalPathD, markerXPct, markerYPct } = useMemo(() => {
+        const visiblePoints = currentX !== undefined
+            ? dataPoints.filter(p => p.x <= currentX)
+            : dataPoints;
+
+        let pathD = visiblePoints.length > 0
+            ? `M ${mapX(visiblePoints[0].x)} ${mapY(visiblePoints[0].y)} ` +
+            visiblePoints.slice(1).map(p => `L ${mapX(p.x)} ${mapY(p.y)}`).join(' ')
+            : '';
+
+        if (currentX !== undefined && currentY !== undefined && visiblePoints.length > 0) {
+            const lastVisibleX = visiblePoints[visiblePoints.length - 1].x;
+            if (currentX > lastVisibleX) {
+                pathD += ` L ${mapX(currentX)} ${mapY(currentY)}`;
+            }
         }
-    }
 
-    const markerXPct = currentX !== undefined ? mapX(currentX) : 0;
-    const markerYPct = currentY !== undefined ? mapY(currentY) : 0;
+        return {
+            finalPathD: pathD,
+            markerXPct: currentX !== undefined ? mapX(currentX) : 0,
+            markerYPct: currentY !== undefined ? mapY(currentY) : 0,
+        };
+    }, [dataPoints, currentX, currentY, mapX, mapY]);
 
     return (
         <div className="bg-slate-800/80 backdrop-blur rounded-xl p-3 border border-slate-700">
