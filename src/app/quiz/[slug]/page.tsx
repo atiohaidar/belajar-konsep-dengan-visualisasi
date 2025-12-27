@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getConfigBySlug } from "@/visualizations/registry";
+import { getConfigBySlug, getAllConfigs } from "@/visualizations/registry";
 import QuizInterface from "@/components/Quiz/QuizInterface";
 
 interface QuizPageProps {
@@ -26,7 +26,10 @@ export default async function QuizPage({ params }: QuizPageProps) {
 }
 
 export async function generateStaticParams() {
-    // Ideally fetch all slugs that have quizzes
-    // For now we can just return known ones or let it dynamic
-    return [];
+    const configs = getAllConfigs();
+    return configs
+        .filter((config) => config.quiz && config.quiz.length > 0)
+        .map((config) => ({
+            slug: config.slug,
+        }));
 }

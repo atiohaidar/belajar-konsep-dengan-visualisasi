@@ -39,6 +39,11 @@ export function getAllConfigs() {
     return visualizations.map((v) => v.config);
 }
 
+// Helper: Get all slugs for static generation
+export function getAllSlugs(): string[] {
+    return visualizations.map((v) => v.config.slug);
+}
+
 // Lazy loading map for dynamic imports
 const lazyComponents: Record<string, ComponentType<VisualizationProps>> = {};
 

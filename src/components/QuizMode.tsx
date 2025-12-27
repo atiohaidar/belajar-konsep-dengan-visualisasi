@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { QuizQuestion } from "@/visualizations/types";
+import { MultipleChoiceQuestion } from "@/visualizations/types";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { useProgress } from "@/lib/useProgress";
 
 interface QuizModeProps {
-    questions: QuizQuestion[];
+    questions: MultipleChoiceQuestion[];
     slug: string;
     onComplete: (score: number, total: number) => void;
     onClose: () => void;

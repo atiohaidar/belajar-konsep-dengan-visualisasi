@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  basePath: '/belajar-konsep-dengan-visualisasi',
+  assetPrefix: '/belajar-konsep-dengan-visualisasi/',
   output: 'export',
   // Uncomment and adjust if your repo is not at root (e.g., username.github.io/repo-name)
   // basePath: '/belajar-konsep-dengan-visualisasi',
